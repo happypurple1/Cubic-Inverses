@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inverse Function Transformations</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Nunito', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+    }
+    .main-card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+      color: white;
+      padding: 24px 32px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 15px;
+    }
+    .progress-bar {
+      display: flex;
+      gap: 6px;
+      padding: 16px 32px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+    }
+    .progress-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .progress-dot.completed {
+      background: #10b981;
+      color: white;
+    }
+    .progress-dot.current {
+      background: #3b82f6;
+      color: white;
+      transform: scale(1.15);
+    }
+    .progress-dot.future {
+      background: #e2e8f0;
+      color: #64748b;
+    }
+    .progress-dot:hover {
+      transform: scale(1.1);
+    }
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      padding: 32px;
+    }
+    @media (max-width: 800px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+      .header h1 { font-size: 22px; }
+    }
+    .level-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 20px 0;
+    }
+    .given-function {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      padding: 20px 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+    .given-function label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.9;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .given-function .equation {
+      font-family: 'Fira Code', monospace;
+      font-size: 24px;
+      font-weight: 500;
+    }
+    .input-section {
+      margin-bottom: 20px;
+    }
+    .input-section > label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .equation-input {
+      width: 100%;
+      padding: 16px 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .equation-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+    .input-help {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 8px;
+    }
+    .input-help code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+    }
+    .buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .btn-nav {
+      background: #1e3a5f;
+      color: white;
+    }
+    .btn-nav:hover {
+      background: #2d5a87;
+    }
+    .btn-nav:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+    .feedback {
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      font-weight: 600;
+    }
+    .feedback.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 2px solid #10b981;
+    }
+    .feedback.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 2px solid #ef4444;
+    }
+    .feedback code {
+      font-family: 'Fira Code', monospace;
+      background: rgba(0,0,0,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .hint-box {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      color: #92400e;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    .rules-panel {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .rules-panel h3 {
+      margin: 0 0 16px 0;
+      color: #1e293b;
+      font-size: 16px;
+    }
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+    .rule:last-child {
+      border-bottom: none;
+    }
+    .rule-cubic {
+      font-family: 'Fira Code', monospace;
+      color: #3b82f6;
+      min-width: 90px;
+    }
+    .rule-arrow {
+      color: #94a3b8;
+    }
+    .rule-cbrt {
+      font-family: 'Fira Code', monospace;
+      color: #ef4444;
+      min-width: 110px;
+    }
+    .rule-desc {
+      color: #64748b;
+      font-size: 12px;
+    }
+    .graph-section h3 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .graph-info {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #64748b;
+    }
+    .graph-info p {
+      margin: 4px 0;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 32px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .nav-info {
+      color: #64748b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const levels = [
+      {
+        id: 1,
+        title: "Level 1: Basic Inverse",
+        hint: "The inverse of x³ is ∛x",
+        cubicFn: (x) => Math.pow(x, 3),
+        cubicDisplay: "y = x³",
+        answerDisplay: "y = ∛x",
+        inverseFn: (x) => Math.cbrt(x)
+      },
+      {
+        id: 2,
+        title: "Level 2: Horizontal Shift",
+        hint: "A horizontal shift in the cubic becomes a vertical shift in the cube root",
+        cubicFn: (x) => Math.pow(x - 2, 3),
+        cubicDisplay: "y = (x - 2)³",
+        answerDisplay: "y = ∛x + 2",
+        inverseFn: (x) => Math.cbrt(x) + 2
+      },
+      {
+        id: 3,
+        title: "Level 3: Vertical Shift",
+        hint: "A vertical shift in the cubic becomes a horizontal shift in the cube root",
+        cubicFn: (x) => Math.pow(x, 3) + 5,
+        cubicDisplay: "y = x³ + 5",
+        answerDisplay: "y = ∛(x - 5)",
+        inverseFn: (x) => Math.cbrt(x - 5)
+      },
+      {
+        id: 4,
+        title: "Level 4: Combined Shifts",
+        hint: "Swap the horizontal and vertical shifts, and reverse the signs",
+        cubicFn: (x) => Math.pow(x - 4, 3) - 6,
+        cubicDisplay: "y = (x - 4)³ - 6",
+        answerDisplay: "y = ∛(x + 6) + 4",
+        inverseFn: (x) => Math.cbrt(x + 6) + 4
+      },
+      {
+        id: 5,
+        title: "Level 5: Vertical Stretch",
+        hint: "A vertical stretch of 2 in the cubic becomes a horizontal compression - divide by 2 inside the radical",
+        cubicFn: (x) => 2 * Math.pow(x, 3),
+        cubicDisplay: "y = 2x³",
+        answerDisplay: "y = ∛(x/2)",
+        inverseFn: (x) => Math.cbrt(x / 2)
+      },
+      {
+        id: 6,
+        title: "Level 6: Horizontal Compression",
+        hint: "A horizontal compression (3x)³ becomes a vertical compression - divide by 3 outside the radical",
+        cubicFn: (x) => Math.pow(3 * x, 3),
+        cubicDisplay: "y = (3x)³",
+        answerDisplay: "y = ∛x / 3",
+        inverseFn: (x) => Math.cbrt(x) / 3
+      },
+      {
+        id: 7,
+        title: "Level 7: Reflection",
+        hint: "The negative moves from outside to inside (or vice versa) - both ∛(-x) and -∛x work!",
+        cubicFn: (x) => -Math.pow(x, 3),
+        cubicDisplay: "y = -x³",
+        answerDisplay: "y = ∛(-x)  or  y = -∛x",
+        inverseFn: (x) => Math.cbrt(-x)
+      },
+      {
+        id: 8,
+        title: "Level 8: Medium Challenge",
+        hint: "Swap shifts, reverse signs, and the coefficient 2 moves inside as division",
+        cubicFn: (x) => 2 * Math.pow(x + 3, 3) - 1,
+        cubicDisplay: "y = 2(x + 3)³ - 1",
+        answerDisplay: "y = ∛((x + 1)/2) - 3",
+        inverseFn: (x) => Math.cbrt((x + 1) / 2) - 3
+      },
+      {
+        id: 9,
+        title: "Level 9: Challenge",
+        hint: "The coefficient ½ becomes 2 inside the radical (reciprocal). Shifts swap and signs reverse.",
+        cubicFn: (x) => 0.5 * Math.pow(x - 1, 3) + 4,
+        cubicDisplay: "y = ½(x - 1)³ + 4",
+        answerDisplay: "y = ∛(2(x - 4)) + 1",
+        inverseFn: (x) => Math.cbrt(2 * (x - 4)) + 1
+      },
+      {
+        id: 10,
+        title: "Level 10: Master Challenge",
+        hint: "Negative coefficient, shifts, and stretch all combine. Take it step by step!",
+        cubicFn: (x) => -3 * Math.pow(x + 2, 3) - 5,
+        cubicDisplay: "y = -3(x + 2)³ - 5",
+        answerDisplay: "y = ∛(-(x + 5)/3) - 2",
+        inverseFn: (x) => Math.cbrt(-(x + 5) / 3) - 2
+      }
+    ];
+
+    // Parse user input to create a function
+    const parseUserFunction = (input) => {
+      try {
+        let expr = input.toLowerCase().replace(/\s/g, '');
+        // Handle cube root notations
+        expr = expr.replace(/∛/g, 'Math.cbrt');
+        expr = expr.replace(/cbrt\(/g, 'Math.cbrt(');
+        expr = expr.replace(/\^/g, '**');
+        // Handle implicit multiplication
+        expr = expr.replace(/(\d)([x(])/g, '$1*$2');
+        expr = expr.replace(/\)(\d)/g, ')*$1');
+        expr = expr.replace(/\)(x)/g, ')*$1');
+        expr = expr.replace(/(x)(\d)/g, '$1*$2');
+        expr = expr.replace(/(\d)\(/g, '$1*(');
+        expr = expr.replace(/\)\(/g, ')*(');
+        expr = expr.replace(/x\(/g, 'x*(');
+        
+        const fn = new Function('x', `return ${expr}`);
+        // Test that it works
+        fn(0);
+        fn(1);
+        return fn;
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const Graph = ({ cubicFn, userFn, showInverse, inverseFn }) => {
+      const width = 400;
+      const height = 400;
+      const scale = 30;
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      const toScreenX = (x) => centerX + x * scale;
+      const toScreenY = (y) => centerY - y * scale;
+
+      const generatePath = (fn, color, isDashed = false) => {
+        const points = [];
+        for (let px = 0; px < width; px += 2) {
+          const x = (px - centerX) / scale;
+          try {
+            const y = fn(x);
+            if (isFinite(y) && Math.abs(y) < 20) {
+              points.push(`${px},${toScreenY(y)}`);
+            }
+          } catch (e) {}
+        }
+        if (points.length < 2) return null;
+        return (
+          <polyline
+            key={color + (isDashed ? '-dashed' : '')}
+            points={points.join(' ')}
+            fill="none"
+            stroke={color}
+            strokeWidth="3"
+            strokeDasharray={isDashed ? "8,4" : "none"}
+            strokeLinecap="round"
+          />
+        );
+      };
+
+      const gridLines = [];
+      for (let i = -10; i <= 10; i++) {
+        if (i !== 0) {
+          gridLines.push(
+            <line key={`v${i}`} x1={toScreenX(i)} y1={0} x2={toScreenX(i)} y2={height} stroke="#e0e4e8" strokeWidth="1" />,
+            <line key={`h${i}`} x1={0} y1={toScreenY(i)} x2={width} y2={toScreenY(i)} stroke="#e0e4e8" strokeWidth="1" />
+          );
+        }
+      }
+
+      return (
+        <svg width={width} height={height} style={{ background: '#fafbfc', borderRadius: '12px', border: '2px solid #d1d9e0', maxWidth: '100%' }}>
+          {gridLines}
+          
+          {/* Axes */}
+          <line x1={0} y1={centerY} x2={width} y2={centerY} stroke="#8b95a1" strokeWidth="2" />
+          <line x1={centerX} y1={0} x2={centerX} y2={height} stroke="#8b95a1" strokeWidth="2" />
+          
+          {/* Axis labels */}
+          {[-5, -4, -3, -2, -1, 1, 2, 3, 4, 5].map(n => (
+            <React.Fragment key={n}>
+              <text x={toScreenX(n)} y={centerY + 18} textAnchor="middle" fontSize="11" fill="#6b7280">{n}</text>
+              <text x={centerX - 14} y={toScreenY(n) + 4} textAnchor="middle" fontSize="11" fill="#6b7280">{n}</text>
+            </React.Fragment>
+          ))}
+          
+          {/* y = x line */}
+          <line 
+            x1={toScreenX(-10)} y1={toScreenY(-10)} 
+            x2={toScreenX(10)} y2={toScreenY(10)} 
+            stroke="#d4a574" strokeWidth="1.5" strokeDasharray="6,4" opacity="0.7"
+          />
+          
+          {/* Functions */}
+          {generatePath(cubicFn, '#3b82f6')}
+          {showInverse && inverseFn && generatePath(inverseFn, '#10b981', true)}
+          {userFn && generatePath(userFn, '#ef4444')}
+          
+          {/* Legend */}
+          <rect x={10} y={10} width={130} height={showInverse ? 80 : 60} fill="white" fillOpacity="0.95" rx="6" stroke="#e2e8f0" />
+          <line x1={18} y1={28} x2={40} y2={28} stroke="#3b82f6" strokeWidth="3" />
+          <text x={48} y={32} fontSize="12" fill="#374151">Given cubic</text>
+          <line x1={18} y1={48} x2={40} y2={48} stroke="#ef4444" strokeWidth="3" />
+          <text x={48} y={52} fontSize="12" fill="#374151">Your answer</text>
+          {showInverse && (
+            <>
+              <line x1={18} y1={68} x2={40} y2={68} stroke="#10b981" strokeWidth="3" strokeDasharray="6,3" />
+              <text x={48} y={72} fontSize="12" fill="#374151">Correct inverse</text>
+            </>
+          )}
+        </svg>
+      );
+    };
+
+    function App() {
+      const [currentLevel, setCurrentLevel] = useState(0);
+      const [userInput, setUserInput] = useState('');
+      const [userFn, setUserFn] = useState(null);
+      const [feedback, setFeedback] = useState(null);
+      const [showHint, setShowHint] = useState(false);
+      const [showInverse, setShowInverse] = useState(false);
+      const [completedLevels, setCompletedLevels] = useState(new Set());
+      const [showRules, setShowRules] = useState(false);
+
+      const level = levels[currentLevel];
+
+      useEffect(() => {
+        if (userInput.trim()) {
+          const fn = parseUserFunction(userInput);
+          setUserFn(() => fn);
+        } else {
+          setUserFn(null);
+        }
+        setFeedback(null);
+        setShowInverse(false);
+      }, [userInput]);
+
+      const checkAnswer = () => {
+        if (!userFn) {
+          setFeedback({ type: 'error', message: 'Please enter a valid function first.' });
+          return;
+        }
+        
+        // Compare graphs by checking multiple points
+        const testPoints = [-5, -3, -1, 0, 1, 3, 5, -2, 2, 4, -4, -0.5, 0.5, 1.5, -1.5];
+        let matchCount = 0;
+        let validPoints = 0;
+        
+        for (const x of testPoints) {
+          try {
+            const userY = userFn(x);
+            const correctY = level.inverseFn(x);
+            
+            if (isFinite(userY) && isFinite(correctY)) {
+              validPoints++;
+              if (Math.abs(userY - correctY) < 0.05) {
+                matchCount++;
+              }
+            }
+          } catch (e) {}
+        }
+        
+        // If most valid points match, consider it correct
+        if (validPoints > 0 && matchCount / validPoints >= 0.85) {
+          setFeedback({ type: 'success', message: '🎉 Correct! The graphs overlap perfectly!' });
+          setShowInverse(true);
+          setCompletedLevels(prev => new Set([...prev, currentLevel]));
+        } else {
+          setFeedback({ type: 'error', message: 'Not quite. Check your transformations and try again. Look at where the red and green lines differ.' });
+          setShowInverse(true);
+        }
+      };
+
+      const goToLevel = (index) => {
+        setCurrentLevel(index);
+        setUserInput('');
+        setFeedback(null);
+        setShowHint(false);
+        setShowInverse(false);
+      };
+
+      const nextLevel = () => {
+        if (currentLevel < levels.length - 1) {
+          goToLevel(currentLevel + 1);
+        }
+      };
+
+      const prevLevel = () => {
+        if (currentLevel > 0) {
+          goToLevel(currentLevel - 1);
+        }
+      };
+
+      return (
+        <div className="main-card">
+          <div className="header">
+            <h1>🔄 Inverse Function Transformations</h1>
+            <p>Discover how cubic and cube root functions are inverses through transformations</p>
+          </div>
+          
+          <div className="progress-bar">
+            {levels.map((l, i) => (
+              <button
+                key={l.id}
+                className={`progress-dot ${completedLevels.has(i) ? 'completed' : ''} ${i === currentLevel ? 'current' : ''} ${i > currentLevel && !completedLevels.has(i) ? 'future' : ''}`}
+                onClick={() => goToLevel(i)}
+              >
+                {completedLevels.has(i) ? '✓' : l.id}
+              </button>
+            ))}
+          </div>
+          
+          <div className="content">
+            <div className="input-section-wrapper">
+              <h2 className="level-title">{level.title}</h2>
+              
+              <div className="given-function">
+                <label>Given Cubic Function</label>
+                <div className="equation">{level.cubicDisplay}</div>
+              </div>
+              
+              <div className="input-section">
+                <label>Enter the inverse (cube root) function:</label>
+                <input
+                  type="text"
+                  className="equation-input"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  placeholder="y = cbrt(x)"
+                  onKeyDown={(e) => e.key === 'Enter' && checkAnswer()}
+                />
+                <div className="input-help">
+                  Use <code>cbrt()</code> for cube root, e.g., <code>cbrt(x+2)-3</code>
+                </div>
+              </div>
+              
+              <div className="buttons">
+                <button className="btn btn-primary" onClick={checkAnswer}>
+                  Check Answer
+                </button>
+                <button className="btn btn-secondary" onClick={() => setShowHint(!showHint)}>
+                  {showHint ? 'Hide Hint' : 'Show Hint'}
+                </button>
+                <button className="btn btn-secondary" onClick={() => setShowRules(!showRules)}>
+                  {showRules ? 'Hide Rules' : 'Show Rules'}
+                </button>
+              </div>
+              
+              {feedback && (
+                <div className={`feedback ${feedback.type}`}>
+                  {feedback.message}
+                  {feedback.type === 'success' && (
+                    <div style={{ marginTop: '8px', fontWeight: 400, fontSize: '14px' }}>
+                      Expected: <code>{level.answerDisplay}</code>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {showHint && (
+                <div className="hint-box">
+                  💡 <strong>Hint:</strong> {level.hint}
+                </div>
+              )}
+              
+              {showRules && (
+                <div className="rules-panel">
+                  <h3>📐 Transformation Rules for Inverses</h3>
+                  <div className="rule">
+                    <span className="rule-cubic">(x - h)³</span>
+                    <span className="rule-arrow">→</span>
+                    <span className="rule-cbrt">∛x + h</span>
+                    <span className="rule-desc">(horiz → vert shift)</span>
+                  </div>
+                  <div className="rule">
+                    <span className="rule-cubic">x³ + k</span>
+                    <span className="rule-arrow">→</span>
+                    <span className="rule-cbrt">∛(x - k)</span>
+                    <span className="rule-desc">(vert → horiz shift)</span>
+                  </div>
+                  <div className="rule">
+                    <span className="rule-cubic">a·x³</span>
+                    <span className="rule-arrow">→</span>
+                    <span className="rule-cbrt">∛(x/a)</span>
+                    <span className="rule-desc">(vert stretch → inside)</span>
+                  </div>
+                  <div className="rule">
+                    <span className="rule-cubic">(bx)³</span>
+                    <span className="rule-arrow">→</span>
+                    <span className="rule-cbrt">∛x / b</span>
+                    <span className="rule-desc">(horiz compress → outside)</span>
+                  </div>
+                  <div className="rule">
+                    <span className="rule-cubic">-x³</span>
+                    <span className="rule-arrow">→</span>
+                    <span className="rule-cbrt">∛(-x) or -∛x</span>
+                    <span className="rule-desc">(reflection swaps)</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="graph-section">
+              <h3>📊 Graph Comparison</h3>
+              <Graph 
+                cubicFn={level.cubicFn} 
+                userFn={userFn}
+                showInverse={showInverse}
+                inverseFn={level.inverseFn}
+              />
+              <div className="graph-info">
+                <p>The dashed gold line is <strong>y = x</strong> (reflection line for inverses)</p>
+                <p>Your function (red) should overlap the green dashed line when correct!</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="nav-buttons">
+            <button className="btn btn-nav" onClick={prevLevel} disabled={currentLevel === 0}>
+              ← Previous
+            </button>
+            <span className="nav-info">
+              Level {currentLevel + 1} of {levels.length} • {completedLevels.size} completed
+            </span>
+            <button className="btn btn-nav" onClick={nextLevel} disabled={currentLevel === levels.length - 1}>
+              Next →
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
